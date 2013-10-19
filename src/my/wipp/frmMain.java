@@ -42,36 +42,22 @@ public class frmMain extends javax.swing.JFrame {
     {
         return  getBssStations(this.get_BSSInterfaceName());
     }
-    
+
     private ArrayList<WpaBssSta> getBssStations(String intrf )
     {
-//        if(m_Scaned == false)
-//        {
-//            BSS_Scan("");
-//            try {
-//                Thread.sleep(4000);
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
         String temp = "";
         ArrayList<WpaBssSta> p_BssSta    = new ArrayList<>();
-        try {
-            temp = RunCmd("./Scripts/getBssStations.sh " + intrf);
-            String[] sta = temp.split("\n");
-            for (String tmp : sta) {
-                String [] params = tmp.split(" ");
-                
-                if(params.length == 4)
-                {
-                    WpaBssSta newSta = new WpaBssSta();
-                    newSta.setSSID(params[0]);
-                    p_BssSta.add(newSta);
-                }
+        temp = RunCmd("./Scripts/getBssStations.sh " + intrf);
+        String[] sta = temp.split("\n");
+        for (String tmp : sta) {
+            String [] params = tmp.split(" ");
+
+            if(params.length == 4)
+            {
+                WpaBssSta newSta = new WpaBssSta();
+                newSta.setSSID(params[0]);
+                p_BssSta.add(newSta);
             }
-            
-        } catch (IOException ex) {
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
         }
         return  p_BssSta;
     }
@@ -82,36 +68,27 @@ public class frmMain extends javax.swing.JFrame {
     
     private void BSS_Scan(String intrf)
     {
-        try {
-            RunCmd("./Scripts/bssScan.sh " + intrf);
-            m_Scaned = true;
-        } catch (IOException ex) {
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        RunCmd("./Scripts/bssScan.sh " + intrf);
+        m_Scaned = true;
     }
     
     private ArrayList<networkInterface> UpdateNetworkInterfaces()
     {
         String temp = "";
         ArrayList<networkInterface> p_Interfeces    = new ArrayList<>();
-        try {
-            // TODO add your handling code here:
-            temp = RunCmd("./Scripts/getInterfacesAndMac.sh");
-            String[] interfaces = temp.split("\n");
-            
-            for (String tmp : interfaces) {
-                String[] params = tmp.split(" ");
-                if(params.length == 2){
-                    networkInterface net = new networkInterface();
-                    net.setNAME(params[0]);
-                    net.setMAC_ADDR(params[1]);
-                    net.setIP_ADDR(RunCmd("/home/werd/devel/wippJava/Scripts/getIpAddressByInterface.sh " + net.getNAME()).trim());
-                    p_Interfeces.add(net);
-                }
+
+        temp = RunCmd("./Scripts/getInterfacesAndMac.sh");
+        String[] interfaces = temp.split("\n");
+
+        for (String tmp : interfaces) {
+            String[] params = tmp.split(" ");
+            if(params.length == 2){
+                networkInterface net = new networkInterface();
+                net.setNAME(params[0]);
+                net.setMAC_ADDR(params[1]);
+                net.setIP_ADDR(RunCmd("/home/werd/devel/wippJava/Scripts/getIpAddressByInterface.sh " + net.getNAME()).trim());
+                p_Interfeces.add(net);
             }
-            
-        } catch (IOException ex) {
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
         }
         return  p_Interfeces;
     }
@@ -120,38 +97,33 @@ public class frmMain extends javax.swing.JFrame {
     {
         String temp = "";
         ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
-        try {
-            temp = RunCmd("./Scripts/getP2pPeers.sh");
-            String[] peers = temp.split("\n");
-            for (String tmp : peers) {
-                WpaP2pSta peer = new WpaP2pSta();
-                peer.setMAC_ADDR(tmp);
-                String p2p_info = RunCmd("/home/werd/devel/wippJava/Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
-                String[] p2p_info_arr = p2p_info.split("\n");
-                for (String tmpParams : p2p_info_arr) {
-                    String [] params = tmpParams.split("=");
-                    if(params.length == 2)
-                    {
-                        switch (params[0]){
-                            case "listen_freq":
-                                peer.setListen_freq( Integer.parseInt(params[1]));
-                                break;
-                            case "manufacturer":
-                                peer.setManufactor(params[1]);
-                                break;
-                            case "device_name":
-                                peer.setNAME(params[1]);
-                                break;
-                        }
+        temp = RunCmd("./Scripts/getP2pPeers.sh");
+        String[] peers = temp.split("\n");
+        for (String tmp : peers) {
+            WpaP2pSta peer = new WpaP2pSta();
+            peer.setMAC_ADDR(tmp);
+            String p2p_info = RunCmd("/home/werd/devel/wippJava/Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
+            String[] p2p_info_arr = p2p_info.split("\n");
+            for (String tmpParams : p2p_info_arr) {
+                String [] params = tmpParams.split("=");
+                if(params.length == 2)
+                {
+                    switch (params[0]){
+                        case "listen_freq":
+                            peer.setListen_freq( Integer.parseInt(params[1]));
+                            break;
+                        case "manufacturer":
+                            peer.setManufactor(params[1]);
+                            break;
+                        case "device_name":
+                            peer.setNAME(params[1]);
+                            break;
                     }
-
                 }
-                p_P2pPeers.add(peer);
+
             }
-            
-        } catch (IOException ex) {
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            p_P2pPeers.add(peer);
+            }
         return  p_P2pPeers;
     }
     
@@ -304,39 +276,20 @@ public class frmMain extends javax.swing.JFrame {
      */
     public frmMain() {
         initComponents();
-        WpaBssSta sta = new WpaBssSta();
-        sta.Freq = 12;
-        sta.MAC_ADDR = "00:00:00:00:00:00";
-        sta.RSSI = -45;
-        sta.SSID = "HelloWorld";
-        
-
         timer.start();
     }
 
     private void DriverReload()
     {
-        try {
-            // TODO add your handling code here:
             RunCmd("./Scripts/restart.sh");
             m_Scaned = false;
-        } catch (IOException ex) {
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
     
     private String getIpAddressByInterface(String intrf)
     {
-        String ret = "";
-        try {
-            // TODO add your handling code here:
-            ret = RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).trim();
-        } catch (IOException ex) {
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return ret;
+        return RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).trim();
     }
-    public String RunCmd(String cmd) throws IOException
+    public String RunCmd(String cmd) 
     {
         String ret = "";
         try
