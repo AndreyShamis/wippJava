@@ -15,7 +15,16 @@ public class WpaP2pSta {
     protected String NAME;
     protected String Manufactor;
     protected int listen_freq;
-
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        return (obj instanceof WpaP2pSta) && 
+                this.NAME.equals(((WpaP2pSta)obj).NAME)  &&
+                this.MAC_ADDR.equals(((WpaP2pSta)obj).MAC_ADDR) &&
+                this.Manufactor.equals(((WpaP2pSta)obj).Manufactor) &&
+                this.listen_freq == (((WpaP2pSta)obj).listen_freq);
+    }
     /**
      * @return the MAC_ADDR
      */

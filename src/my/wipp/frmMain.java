@@ -17,7 +17,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 /**
  *
@@ -54,7 +53,71 @@ public class frmMain extends javax.swing.JFrame {
         }
         return  p_Interfeces;
     }
-   
+    private ArrayList<WpaP2pSta> UpdateP2pPeersTable()
+    {
+        String temp = "";
+        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
+        try {
+            temp = RunCmd("./Scripts/getP2pPeers.sh");
+            String[] peers = temp.split("\n");
+            for (String tmp : peers) {
+                WpaP2pSta peer = new WpaP2pSta();
+                peer.setMAC_ADDR(tmp);
+                String p2p_info = RunCmd("/home/werd/devel/wippJava/Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
+                String[] p2p_info_arr = p2p_info.split("\n");
+                for (String tmpParams : p2p_info_arr) {
+                    String [] params = tmpParams.split("=");
+                    if(params.length == 2)
+                    {
+                        switch (params[0]){
+                            case "listen_freq":
+                                peer.setListen_freq( Integer.parseInt(params[1]));
+                                break;
+                            case "manufacturer":
+                                peer.setManufactor(params[1]);
+                                break;
+                            case "device_name":
+                                peer.setNAME(params[1]);
+                                break;
+                        }
+                    }
+
+                }
+                p_P2pPeers.add(peer);
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return  p_P2pPeers;
+    }
+    
+    private boolean isP2pListChanged(ArrayList<WpaP2pSta> p_1,ArrayList<WpaP2pSta> p_2)
+    {
+        if(p_1.size() != p_2.size())
+            return true;
+        
+        for (WpaP2pSta wpaP2pSta : p_1) {
+            if(!p_2.contains(wpaP2pSta))
+                return true;
+        }
+        
+        return false;
+    }
+    
+    private boolean isInterfacesChanged(ArrayList<networkInterface> p_1,ArrayList<networkInterface> p_2)
+    {
+        if(p_1.size() != p_2.size())
+            return true;
+
+        for (networkInterface temp : p_1) {
+            if(!p_2.contains(temp))
+                return true;
+        }
+        
+        return false;
+    }
+      
     private void GUIUpdateNetworkInterfaces()
     {
         
@@ -63,7 +126,7 @@ public class frmMain extends javax.swing.JFrame {
         DefaultTableModel dm = (DefaultTableModel) tblNetworkInterfaces.getModel();
         int rowCount=dm.getRowCount();
         
-        if(p_Interfeces.equals(m_Interfeces) || rowCount < 1)
+        if(isInterfacesChanged(p_Interfeces,m_Interfeces) || rowCount < 1)
         {
             m_Interfeces = p_Interfeces;
             for (int i = rowCount-1;i>=0;i--) {
@@ -80,6 +143,33 @@ public class frmMain extends javax.swing.JFrame {
             }
         }
     }
+    
+    private void GUIUpdateP2pPeers()
+    {
+        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
+        p_P2pPeers = UpdateP2pPeersTable();
+        DefaultTableModel dm = (DefaultTableModel) tblP2PStatins.getModel();
+        int rowCount=dm.getRowCount();
+        
+        if(!p_P2pPeers.equals(m_P2p) || rowCount < 1)
+        {
+            m_P2p = p_P2pPeers;
+            for (int i = rowCount-1;i>=0;i--) {
+                dm.removeRow(i);
+            }
+            int i = 0;
+            for (WpaP2pSta temp : m_P2p) {
+                Vector vc = new Vector();
+                vc.add(temp.getMAC_ADDR());
+                vc.add(temp.getNAME());
+                vc.add(temp.getManufactor());
+                vc.add(temp.getListen_freq());
+                dm.insertRow(i, vc); 
+                i++;
+            }
+        }
+    }
+        
     ActionListener al = new ActionListener() {
 
         @Override
@@ -87,9 +177,10 @@ public class frmMain extends javax.swing.JFrame {
             UpdateP2pPeersTable();
 
             GUIUpdateNetworkInterfaces();
+            GUIUpdateP2pPeers();
         }
     };
-    private final Timer timer  = new Timer(100,al);
+    private final Timer timer  = new Timer(300,al);
     
     private void CleanP2pPeersTable()
     {
@@ -105,26 +196,7 @@ public class frmMain extends javax.swing.JFrame {
 
         return p_P2p;
     }
-    private void UpdateP2pPeersTable()
-    {
-        ArrayList<WpaP2pSta> p_P2p =  getP2pPeers();
-        DefaultTableModel dm = (DefaultTableModel) tblP2PStatins.getModel();
-        
-        if(!p_P2p.equals(m_P2p) || dm.getRowCount() ==0)
-        {
-            CleanP2pPeersTable();
-            int i = 0;
-            for (WpaP2pSta p2psta : m_P2p) {
-                Vector vc = new Vector();
-                vc.add(p2psta.MAC_ADDR);
-                vc.add(p2psta.Manufactor);
-                vc.add(p2psta.NAME);
-                vc.add(p2psta.listen_freq);
-                ((DefaultTableModel) tblP2PStatins.getModel()).insertRow(i, vc); 
-                i++;
-            }
-        }
-    }
+
     /**
      * Creates new form frmMain
      */
@@ -227,6 +299,11 @@ public class frmMain extends javax.swing.JFrame {
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        tblP2PStatins.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblP2PStatinsMouseClicked(evt);
             }
         });
         jScrollPane3.setViewportView(tblP2PStatins);
@@ -358,6 +435,15 @@ public class frmMain extends javax.swing.JFrame {
         m_P2p.add(p2psta);
         m_P2p.add(p2psta2);
     }//GEN-LAST:event_btnP2pFindActionPerformed
+
+    private void tblP2PStatinsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblP2PStatinsMouseClicked
+        if(evt.getClickCount() == 2)
+        {
+            DefaultTableModel dm = (DefaultTableModel) tblP2PStatins.getModel();
+            int selected = tblP2PStatins.getSelectedRow();
+            System.out.println("Selected:" + selected);
+        }
+    }//GEN-LAST:event_tblP2PStatinsMouseClicked
 
     private void AppendLog(String txt)
     {

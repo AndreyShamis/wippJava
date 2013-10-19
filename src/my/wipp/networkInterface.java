@@ -6,6 +6,8 @@
 
 package my.wipp;
 
+import java.util.Objects;
+
 /**
  *
  * @author werd
@@ -15,6 +17,23 @@ public class networkInterface {
     private String NAME;
     private String IP_ADDR;    
 
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        return this.NAME.equals(((networkInterface)obj).NAME)  &&
+                (obj instanceof networkInterface) && this.IP_ADDR.equals(((networkInterface)obj).IP_ADDR) &&
+                this.MAC_ADDR.equals(((networkInterface)obj).MAC_ADDR);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.MAC_ADDR);
+        hash = 37 * hash + Objects.hashCode(this.NAME);
+        hash = 37 * hash + Objects.hashCode(this.IP_ADDR);
+        return hash;
+    }
     /**
      * @return the MAC_ADDR
      */
