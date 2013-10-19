@@ -27,7 +27,8 @@ public class frmMain extends javax.swing.JFrame {
     private ArrayList<WpaBssSta>        m_Bss           = new ArrayList<>();
     private ArrayList<WpaP2pSta>        m_P2p           = new ArrayList<>();
     private ArrayList<networkInterface> m_Interfeces    = new ArrayList<>();
-    
+    private String m_BSSInterfaceName   =   "wlan0";
+    private String m_P2PInterfaceName   =   "p2p0";
     private boolean  m_Scaned = false;
     //-------------------------------------------------------------------------
     //-------------------------------------------------------------------------
@@ -39,7 +40,7 @@ public class frmMain extends javax.swing.JFrame {
      */
     private ArrayList<WpaBssSta> getBssStations()
     {
-        return  getBssStations("wlan0");
+        return  getBssStations(this.get_BSSInterfaceName());
     }
     
     private ArrayList<WpaBssSta> getBssStations(String intrf )
@@ -76,7 +77,7 @@ public class frmMain extends javax.swing.JFrame {
     }
 
     private void BSS_Scan(){
-        BSS_Scan("wlan0");
+        BSS_Scan(this.get_BSSInterfaceName());
     }
     
     private void BSS_Scan(String intrf)
@@ -618,4 +619,32 @@ public class frmMain extends javax.swing.JFrame {
     private javax.swing.JTable tblP2PStations;
     private javax.swing.JTextArea txtLog;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * @return the m_BSSInterfaceName
+     */
+    public String get_BSSInterfaceName() {
+        return m_BSSInterfaceName;
+    }
+
+    /**
+     * @param m_BSSInterfaceName the m_BSSInterfaceName to set
+     */
+    public void set_BSSInterfaceName(String m_BSSInterfaceName) {
+        this.m_BSSInterfaceName = m_BSSInterfaceName;
+    }
+
+    /**
+     * @return the m_P2PInterfaceName
+     */
+    public String get_P2PInterfaceName() {
+        return m_P2PInterfaceName;
+    }
+
+    /**
+     * @param m_P2PInterfaceName the m_P2PInterfaceName to set
+     */
+    public void set_P2PInterfaceName(String m_P2PInterfaceName) {
+        this.m_P2PInterfaceName = m_P2PInterfaceName;
+    }
 }
