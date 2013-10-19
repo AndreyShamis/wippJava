@@ -16,6 +16,15 @@ public class WpaBssSta {
     protected int Freq;
     protected int RSSI;
 
+    @Override
+    public boolean equals(Object obj)
+    {
+        return (obj instanceof WpaBssSta) && 
+                this.SSID.equals(((WpaBssSta)obj).SSID)  &&
+                this.MAC_ADDR.equals(((WpaBssSta)obj).MAC_ADDR) &&
+                this.Freq == (((WpaBssSta)obj).Freq) &&
+                this.RSSI == (((WpaBssSta)obj).RSSI);
+    }
     /**
      * @return the SSID
      */
