@@ -44,15 +44,15 @@ public class frmMain extends javax.swing.JFrame {
     
     private ArrayList<WpaBssSta> getBssStations(String intrf )
     {
-        if(m_Scaned == false)
-        {
-            BSS_Scan("");
-            try {
-                Thread.sleep(4000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+//        if(m_Scaned == false)
+//        {
+//            BSS_Scan("");
+//            try {
+//                Thread.sleep(4000);
+//            } catch (InterruptedException ex) {
+//                Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
         String temp = "";
         ArrayList<WpaBssSta> p_BssSta    = new ArrayList<>();
         try {
@@ -527,7 +527,7 @@ public class frmMain extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btnBssScanMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnBssScanMouseClicked
-        // TODO add your handling code here:
+        BSS_Scan();
     }//GEN-LAST:event_btnBssScanMouseClicked
 
     private void btnBssScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBssScanActionPerformed
