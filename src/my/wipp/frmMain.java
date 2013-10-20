@@ -580,7 +580,7 @@ public class frmMain extends javax.swing.JFrame {
 
     private void CMD_p2p_find()
     {
-        RunCmd("sudo wpa_cli -i p2p0 p2p_find");
+        RunCmd("sudo wpa_cli -i " + this.get_P2PInterfaceName() +" p2p_find");
     }
     
     private void tblP2PStationsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblP2PStationsMouseClicked
