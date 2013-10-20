@@ -24,9 +24,9 @@ import javax.swing.table.DefaultTableModel;
  */
 public class frmMain extends javax.swing.JFrame {
 
-    private ArrayList<WpaBssSta>        m_Bss           = new ArrayList<>();
-    private ArrayList<WpaP2pSta>        m_P2p           = new ArrayList<>();
-    private ArrayList<networkInterface> m_Interfeces    = new ArrayList<>();
+    private ArrayList<WpaBssSta>        m_Bss           = new ArrayList<WpaBssSta>();
+    private ArrayList<WpaP2pSta>        m_P2p           = new ArrayList<WpaP2pSta>();
+    private ArrayList<networkInterface> m_Interfeces    = new ArrayList<networkInterface>();
     private String m_BSSInterfaceName   =   "wlan0";
     private String m_P2PInterfaceName   =   "p2p0";
     private boolean  m_Scaned = false;
@@ -46,7 +46,7 @@ public class frmMain extends javax.swing.JFrame {
     private ArrayList<WpaBssSta> getBssStations(String intrf )
     {
         String temp = "";
-        ArrayList<WpaBssSta> p_BssSta    = new ArrayList<>();
+        ArrayList<WpaBssSta> p_BssSta    = new ArrayList<WpaBssSta>();
         temp = RunCmd("./Scripts/getBssStations.sh " + intrf);
         String[] sta = temp.split("\n");
         for (String tmp : sta) {
@@ -79,7 +79,7 @@ public class frmMain extends javax.swing.JFrame {
     private ArrayList<networkInterface> getNetworkInterfaces()
     {
         String temp = "";
-        ArrayList<networkInterface> p_Interfeces    = new ArrayList<>();
+        ArrayList<networkInterface> p_Interfeces    = new ArrayList<networkInterface>();
 
         temp = RunCmd("./Scripts/getInterfacesAndMac.sh");
         String[] interfaces = temp.split("\n");
@@ -140,7 +140,7 @@ public class frmMain extends javax.swing.JFrame {
     private void GUIUpdateNetworkInterfaces()
     {
         
-        ArrayList<networkInterface> p_Interfeces    = new ArrayList<>();
+        ArrayList<networkInterface> p_Interfeces    = new ArrayList<networkInterface>();
         p_Interfeces = getNetworkInterfaces();
         DefaultTableModel dm = (DefaultTableModel) tblNetworkInterfaces.getModel();
         int rowCount=dm.getRowCount();
@@ -165,7 +165,7 @@ public class frmMain extends javax.swing.JFrame {
     
     private void GUIUpdateP2pPeers()
     {
-        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
+        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<WpaP2pSta>();
         p_P2pPeers = getP2pPeers();
         DefaultTableModel dm = (DefaultTableModel) tblP2PStations.getModel();
         int rowCount=dm.getRowCount();
@@ -193,7 +193,7 @@ public class frmMain extends javax.swing.JFrame {
     
     private void GUIUpdateBss()
     {
-        ArrayList<WpaBssSta> p_Bss    = new ArrayList<>();
+        ArrayList<WpaBssSta> p_Bss    = new ArrayList<WpaBssSta>();
         p_Bss = getBssStations();
         DefaultTableModel dm = (DefaultTableModel) tblBss.getModel();
         int rowCount=dm.getRowCount();
@@ -245,7 +245,7 @@ public class frmMain extends javax.swing.JFrame {
     private ArrayList<WpaP2pSta> getP2pPeers()
     {
         String temp = "";
-        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
+        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<WpaP2pSta>();
         temp = RunCmd("./Scripts/getP2pPeers.sh");
         String[] peers = temp.split("\n");
         for (String tmp : peers) {
@@ -259,22 +259,18 @@ public class frmMain extends javax.swing.JFrame {
                     String [] params = tmpParams.split("=");
                     if(params.length == 2)
                     {
-                        switch (params[0]){
-                            case "listen_freq":
+                        if(params[0].equals("listen_freq")){
                                 int lf = -1;
                                 if(params[1].length() >0)
                                     lf = Integer.parseInt(params[1]);
                                 peer.setListen_freq(lf);
-                                break;
-                            case "manufacturer":
+                        }else if(params[0].equals("manufacturer")){
                                 String man = "Unknown";
                                 if(params[1] != null && params[1].length() > 1)
                                     man = params[1];
                                 peer.setManufactor(man);
-                                break;
-                            case "device_name":
-                                peer.setNAME(params[1]);
-                                break;
+                        }else if(params[0].equals( "device_name")){
+                                peer.setNAME(params[1]);   
                         }
                     }
 
