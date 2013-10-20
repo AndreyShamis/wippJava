@@ -19,11 +19,19 @@ public class WpaP2pSta {
     @Override
     public boolean equals(Object obj)
     {
-        return (obj instanceof WpaP2pSta) && 
-                this.NAME.equals(((WpaP2pSta)obj).NAME)  &&
-                this.MAC_ADDR.equals(((WpaP2pSta)obj).MAC_ADDR) &&
-                this.Manufactor.equals(((WpaP2pSta)obj).Manufactor) &&
-                this.listen_freq == (((WpaP2pSta)obj).listen_freq);
+        boolean ret = false;
+        try
+        {
+            ret = (obj instanceof WpaP2pSta) && 
+                    this.NAME.equals(((WpaP2pSta)obj).NAME)  &&
+                    this.MAC_ADDR.equals(((WpaP2pSta)obj).MAC_ADDR) &&
+                    this.Manufactor.equals(((WpaP2pSta)obj).Manufactor) &&
+                    this.listen_freq == (((WpaP2pSta)obj).listen_freq);
+        }
+        catch(Exception ex){
+            
+        }
+        return ret;
     }
     /**
      * @return the MAC_ADDR
@@ -64,7 +72,10 @@ public class WpaP2pSta {
      * @param Manufactor the Manufactor to set
      */
     public void setManufactor(String Manufactor) {
-        this.Manufactor = Manufactor;
+        if(Manufactor == null)
+            this.Manufactor = "";
+        else
+            this.Manufactor = Manufactor;
     }
 
     /**

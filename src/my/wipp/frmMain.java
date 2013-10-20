@@ -50,13 +50,17 @@ public class frmMain extends javax.swing.JFrame {
         temp = RunCmd("./Scripts/getBssStations.sh " + intrf);
         String[] sta = temp.split("\n");
         for (String tmp : sta) {
-            String [] params = tmp.split(" ");
-
-            if(params.length == 4)
-            {
-                WpaBssSta newSta = new WpaBssSta();
-                newSta.setSSID(params[0]);
-                p_BssSta.add(newSta);
+            String [] params = tmp.split("\t");
+            if(params.length == 5){
+                try{
+                    WpaBssSta newSta = new WpaBssSta();
+                    newSta.setSSID(params[4]);
+                    newSta.setMAC_ADDR(params[0]);
+                    newSta.setFreq(Integer.parseInt(params[1]));
+                    newSta.setRSSI(Integer.parseInt(params[2]));
+                    p_BssSta.add(newSta);
+                }
+                catch(Exception ex){}
             }
         }
         return  p_BssSta;
@@ -72,7 +76,7 @@ public class frmMain extends javax.swing.JFrame {
         m_Scaned = true;
     }
     
-    private ArrayList<networkInterface> UpdateNetworkInterfaces()
+    private ArrayList<networkInterface> getNetworkInterfaces()
     {
         String temp = "";
         ArrayList<networkInterface> p_Interfeces    = new ArrayList<>();
@@ -86,46 +90,13 @@ public class frmMain extends javax.swing.JFrame {
                 networkInterface net = new networkInterface();
                 net.setNAME(params[0]);
                 net.setMAC_ADDR(params[1]);
-                net.setIP_ADDR(RunCmd("/home/werd/devel/wippJava/Scripts/getIpAddressByInterface.sh " + net.getNAME()).trim());
+                net.setIP_ADDR(getIpAddressByInterface(net.getNAME()));
                 p_Interfeces.add(net);
             }
         }
         return  p_Interfeces;
     }
     
-    private ArrayList<WpaP2pSta> UpdateP2pPeersTable()
-    {
-        String temp = "";
-        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
-        temp = RunCmd("./Scripts/getP2pPeers.sh");
-        String[] peers = temp.split("\n");
-        for (String tmp : peers) {
-            WpaP2pSta peer = new WpaP2pSta();
-            peer.setMAC_ADDR(tmp);
-            String p2p_info = RunCmd("/home/werd/devel/wippJava/Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
-            String[] p2p_info_arr = p2p_info.split("\n");
-            for (String tmpParams : p2p_info_arr) {
-                String [] params = tmpParams.split("=");
-                if(params.length == 2)
-                {
-                    switch (params[0]){
-                        case "listen_freq":
-                            peer.setListen_freq( Integer.parseInt(params[1]));
-                            break;
-                        case "manufacturer":
-                            peer.setManufactor(params[1]);
-                            break;
-                        case "device_name":
-                            peer.setNAME(params[1]);
-                            break;
-                    }
-                }
-
-            }
-            p_P2pPeers.add(peer);
-            }
-        return  p_P2pPeers;
-    }
     
     private boolean isP2pListChanged(ArrayList<WpaP2pSta> p_1,ArrayList<WpaP2pSta> p_2)
     {
@@ -170,7 +141,7 @@ public class frmMain extends javax.swing.JFrame {
     {
         
         ArrayList<networkInterface> p_Interfeces    = new ArrayList<>();
-        p_Interfeces = UpdateNetworkInterfaces();
+        p_Interfeces = getNetworkInterfaces();
         DefaultTableModel dm = (DefaultTableModel) tblNetworkInterfaces.getModel();
         int rowCount=dm.getRowCount();
         
@@ -195,27 +166,29 @@ public class frmMain extends javax.swing.JFrame {
     private void GUIUpdateP2pPeers()
     {
         ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
-        p_P2pPeers = UpdateP2pPeersTable();
+        p_P2pPeers = getP2pPeers();
         DefaultTableModel dm = (DefaultTableModel) tblP2PStations.getModel();
         int rowCount=dm.getRowCount();
         
-        if(isP2pListChanged(p_P2pPeers,m_P2p) || rowCount < 1)
-        {
-            m_P2p = p_P2pPeers;
-            for (int i = rowCount-1;i>=0;i--) {
-                dm.removeRow(i);
-            }
-            int i = 0;
-            for (WpaP2pSta temp : m_P2p) {
-                Vector vc = new Vector();
-                vc.add(temp.getMAC_ADDR());
-                vc.add(temp.getNAME());
-                vc.add(temp.getManufactor());
-                vc.add(temp.getListen_freq());
-                dm.insertRow(i, vc); 
-                i++;
-            }
+        try{
+            if(isP2pListChanged(p_P2pPeers,m_P2p) || rowCount < 1){
+                m_P2p = p_P2pPeers;
+                CleanP2pPeersTable();
+                int i = 0;
+                for (WpaP2pSta temp : m_P2p) {
+                    Vector vc = new Vector();
+                    vc.add(temp.getMAC_ADDR());
+                    vc.add(temp.getNAME());
+                    vc.add(temp.getManufactor());
+                    vc.add(temp.getListen_freq());
+                    dm.insertRow(i, vc); 
+                    i++;
+                }
+            }  
+        }catch(Exception ex){
+            AppendLog("GUIUpdateP2pPeers error " + ex.getMessage());
         }
+
     }
     
     private void GUIUpdateBss()
@@ -248,13 +221,18 @@ public class frmMain extends javax.swing.JFrame {
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            UpdateP2pPeersTable();
-
-            GUIUpdateNetworkInterfaces();
-            GUIUpdateP2pPeers();
+            try{
+                GUIUpdateNetworkInterfaces();
+                GUIUpdateP2pPeers();
+                GUIUpdateBss();
+                lblBssCount.setText(Integer.toString(m_Bss.size()));
+                lblP2pPeersCount.setText(Integer.toString(m_P2p.size()));
+            }catch(Exception ex){
+                //AppendLog("Timer error:" + ex.getMessage());
+            }
         }
     };
-    private final Timer timer  = new Timer(300,al);
+    private final Timer timer  = new Timer(700,al);
     
     private void CleanP2pPeersTable()
     {
@@ -266,9 +244,45 @@ public class frmMain extends javax.swing.JFrame {
     }
     private ArrayList<WpaP2pSta> getP2pPeers()
     {
-        ArrayList<WpaP2pSta> p_P2p = new ArrayList<>();
+        String temp = "";
+        ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<>();
+        temp = RunCmd("./Scripts/getP2pPeers.sh");
+        String[] peers = temp.split("\n");
+        for (String tmp : peers) {
+            if(tmp.length() >5)
+            {    
+                WpaP2pSta peer = new WpaP2pSta();
+                peer.setMAC_ADDR(tmp);
+                String p2p_info = RunCmd("./Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
+                String[] p2p_info_arr = p2p_info.split("\n");
+                for (String tmpParams : p2p_info_arr) {
+                    String [] params = tmpParams.split("=");
+                    if(params.length == 2)
+                    {
+                        switch (params[0]){
+                            case "listen_freq":
+                                int lf = -1;
+                                if(params[1].length() >0)
+                                    lf = Integer.parseInt(params[1]);
+                                peer.setListen_freq(lf);
+                                break;
+                            case "manufacturer":
+                                String man = "Unknown";
+                                if(params[1] != null && params[1].length() > 1)
+                                    man = params[1];
+                                peer.setManufactor(man);
+                                break;
+                            case "device_name":
+                                peer.setNAME(params[1]);
+                                break;
+                        }
+                    }
 
-        return p_P2p;
+                }
+                p_P2pPeers.add(peer);
+            }
+        }
+        return  p_P2pPeers;
     }
 
     /**
@@ -281,14 +295,20 @@ public class frmMain extends javax.swing.JFrame {
 
     private void DriverReload()
     {
-            RunCmd("./Scripts/restart.sh");
-            m_Scaned = false;
+        new Thread(new Runnable() {
+            public void run()
+            {
+                 RunCmd("./Scripts/restart.sh");
+            }
+        }).start();
+        m_Scaned = false;
     }
     
     private String getIpAddressByInterface(String intrf)
     {
         return RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).trim();
     }
+    
     public String RunCmd(String cmd) 
     {
         String ret = "";
@@ -306,11 +326,19 @@ public class frmMain extends javax.swing.JFrame {
                     ret += "\n";
                 ret += out.readLine();
             }
+            if(proc.exitValue() != 0 && proc.exitValue() != 255)
+            {
+                AppendLog("[" + cmd + "]Exit code = " + proc.exitValue() + " " +ret);
+                String errStr = err.readLine();
+                if(errStr != null)
+                    AppendLog(errStr);
+            }
         }
         catch(IOException e)
         {
             AppendLog(e.getMessage());
         } catch (InterruptedException ex) {
+            AppendLog(ex.getMessage());
             Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
         }
         
@@ -325,33 +353,24 @@ public class frmMain extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         tblP2PStations = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtLog = new javax.swing.JTextArea();
-        btnBssScan = new javax.swing.JButton();
-        btnP2pFind = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblNetworkInterfaces = new javax.swing.JTable();
         jScrollPane4 = new javax.swing.JScrollPane();
         tblBss = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        btnBssScan = new javax.swing.JButton();
+        btnP2pFind = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        lblP2pPeersCount = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        lblBssCount = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jButton1.setFont(new java.awt.Font("Dialog", 1, 8)); // NOI18N
-        jButton1.setText("Reload Driver");
-        jButton1.setName("btnReloadDriver"); // NOI18N
-        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jButton1MouseClicked(evt);
-            }
-        });
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         tblP2PStations.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -380,34 +399,6 @@ public class frmMain extends javax.swing.JFrame {
         txtLog.setRows(5);
         jScrollPane1.setViewportView(txtLog);
 
-        btnBssScan.setFont(new java.awt.Font("Dialog", 1, 8)); // NOI18N
-        btnBssScan.setText("Scan");
-        btnBssScan.setName("btnReloadDriver"); // NOI18N
-        btnBssScan.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                btnBssScanMouseClicked(evt);
-            }
-        });
-        btnBssScan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBssScanActionPerformed(evt);
-            }
-        });
-
-        btnP2pFind.setFont(new java.awt.Font("Dialog", 1, 8)); // NOI18N
-        btnP2pFind.setText("P2P Find");
-        btnP2pFind.setName("btnReloadDriver"); // NOI18N
-        btnP2pFind.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                btnP2pFindMouseClicked(evt);
-            }
-        });
-        btnP2pFind.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnP2pFindActionPerformed(evt);
-            }
-        });
-
         tblNetworkInterfaces.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -428,44 +419,135 @@ public class frmMain extends javax.swing.JFrame {
         ));
         jScrollPane4.setViewportView(tblBss);
 
+        jButton1.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        jButton1.setText("Reload Driver");
+        jButton1.setName("btnReloadDriver"); // NOI18N
+        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButton1MouseClicked(evt);
+            }
+        });
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        btnBssScan.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        btnBssScan.setText("Scan");
+        btnBssScan.setName("btnReloadDriver"); // NOI18N
+        btnBssScan.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnBssScanMouseClicked(evt);
+            }
+        });
+        btnBssScan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBssScanActionPerformed(evt);
+            }
+        });
+
+        btnP2pFind.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        btnP2pFind.setText("P2P Find");
+        btnP2pFind.setName("btnReloadDriver"); // NOI18N
+        btnP2pFind.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnP2pFindMouseClicked(evt);
+            }
+        });
+        btnP2pFind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnP2pFindActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        jLabel2.setText("P2P Peers");
+
+        lblP2pPeersCount.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        lblP2pPeersCount.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblP2pPeersCount.setLabelFor(jLabel2);
+        lblP2pPeersCount.setText("0");
+
+        jLabel1.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        jLabel1.setText("BSS count");
+
+        lblBssCount.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
+        lblBssCount.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblBssCount.setLabelFor(jLabel1);
+        lblBssCount.setText("0");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(lblBssCount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblP2pPeersCount, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnBssScan, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnP2pFind, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(9, 9, 9)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnBssScan)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnP2pFind)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(lblP2pPeersCount))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(lblBssCount)))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane4)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(108, Short.MAX_VALUE)
-                        .addComponent(jButton1)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnBssScan, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnP2pFind, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1))
-                .addContainerGap())
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 431, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 554, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton1)
-                            .addComponent(btnBssScan)
-                            .addComponent(btnP2pFind))))
-                .addGap(7, 7, 7)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(27, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
         );
 
         pack();
@@ -481,13 +563,11 @@ public class frmMain extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btnBssScanMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnBssScanMouseClicked
-        BSS_Scan();
+        
     }//GEN-LAST:event_btnBssScanMouseClicked
 
     private void btnBssScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBssScanActionPerformed
-        // TODO add your handling code here:
-        m_P2p = getP2pPeers();
-        AppendLog(getIpAddressByInterface("eth0"));
+        BSS_Scan();
     }//GEN-LAST:event_btnBssScanActionPerformed
 
     private void btnP2pFindMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnP2pFindMouseClicked
@@ -495,22 +575,14 @@ public class frmMain extends javax.swing.JFrame {
     }//GEN-LAST:event_btnP2pFindMouseClicked
 
     private void btnP2pFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnP2pFindActionPerformed
-        WpaP2pSta p2psta = new WpaP2pSta();
-        p2psta.MAC_ADDR = "01:01:01:04:05:06";
-        p2psta.Manufactor = "Intel";
-        p2psta.NAME = "BAL BLA BLA";
-        p2psta.listen_freq = 2412;
-        
-        WpaP2pSta p2psta2 = new WpaP2pSta();
-        p2psta2.MAC_ADDR = "02:01:01:04:05:06";
-        p2psta2.Manufactor = "In22tel";
-        p2psta2.NAME = "B22AL BLA BLA";
-        p2psta2.listen_freq = 2112;
-        
-        m_P2p.add(p2psta);
-        m_P2p.add(p2psta2);
+        CMD_p2p_find(); 
     }//GEN-LAST:event_btnP2pFindActionPerformed
 
+    private void CMD_p2p_find()
+    {
+        RunCmd("sudo wpa_cli -i p2p0 p2p_find");
+    }
+    
     private void tblP2PStationsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblP2PStationsMouseClicked
         if(evt.getClickCount() == 2)
         {
@@ -563,10 +635,15 @@ public class frmMain extends javax.swing.JFrame {
     private javax.swing.JButton btnBssScan;
     private javax.swing.JButton btnP2pFind;
     private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JLabel lblBssCount;
+    private javax.swing.JLabel lblP2pPeersCount;
     private javax.swing.JTable tblBss;
     private javax.swing.JTable tblNetworkInterfaces;
     private javax.swing.JTable tblP2PStations;
