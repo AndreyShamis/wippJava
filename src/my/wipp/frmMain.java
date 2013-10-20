@@ -287,6 +287,7 @@ public class frmMain extends javax.swing.JFrame {
     public frmMain() {
         initComponents();
         timer.start();
+        AppendLog(RunCmd("pwd"));
     }
 
     private void DriverReload()
