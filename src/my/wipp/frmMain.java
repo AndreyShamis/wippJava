@@ -49,7 +49,7 @@ public class frmMain extends javax.swing.JFrame {
     {
         String temp = "";
         ArrayList<WpaBssSta> p_BssSta    = new ArrayList<WpaBssSta>();
-        temp = RunCmd("./Scripts/getBssStations.sh " + intrf);
+        temp = ConsoleTools.RunCmd("./Scripts/getBssStations.sh " + intrf);
         String[] sta = temp.split("\n");
         for (String tmp : sta) {
             String [] params = tmp.split("\t");
@@ -74,7 +74,7 @@ public class frmMain extends javax.swing.JFrame {
     
     private void BSS_Scan(String intrf)
     {
-        RunCmd("./Scripts/bssScan.sh " + intrf);
+        ConsoleTools.RunCmd("./Scripts/bssScan.sh " + intrf);
         m_Scaned = true;
     }
     
@@ -83,7 +83,7 @@ public class frmMain extends javax.swing.JFrame {
         String temp = "";
         ArrayList<networkInterface> p_Interfeces    = new ArrayList<networkInterface>();
 
-        temp = RunCmd("./Scripts/getInterfacesAndMac.sh");
+        temp = ConsoleTools.RunCmd("./Scripts/getInterfacesAndMac.sh");
         String[] interfaces = temp.split("\n");
 
         for (String tmp : interfaces) {
@@ -248,14 +248,14 @@ public class frmMain extends javax.swing.JFrame {
     {
         String temp = "";
         ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<WpaP2pSta>();
-        temp = RunCmd("./Scripts/getP2pPeers.sh");
+        temp = ConsoleTools.RunCmd("./Scripts/getP2pPeers.sh");
         String[] peers = temp.split("\n");
         for (String tmp : peers) {
             if(tmp.length() >5)
             {    
                 WpaP2pSta peer = new WpaP2pSta();
                 peer.setMAC_ADDR(tmp);
-                String p2p_info = RunCmd("./Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
+                String p2p_info = ConsoleTools.RunCmd("./Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
                 String[] p2p_info_arr = p2p_info.split("\n");
                 for (String tmpParams : p2p_info_arr) {
                     String [] params = tmpParams.split("=");
@@ -289,7 +289,7 @@ public class frmMain extends javax.swing.JFrame {
     public frmMain() {
         initComponents();
         timer.start();
-        AppendLog(RunCmd("pwd"));
+        AppendLog(ConsoleTools.RunCmd("pwd"));
     }
 
     private void DriverReload()
@@ -297,7 +297,7 @@ public class frmMain extends javax.swing.JFrame {
         new Thread(new Runnable() {
             public void run()
             {
-                 RunCmd("./Scripts/restart.sh");
+                 ConsoleTools.RunCmd("./Scripts/restart.sh");
             }
         }).start();
         txtLog.append("Restarted");
@@ -306,44 +306,10 @@ public class frmMain extends javax.swing.JFrame {
     
     private String getIpAddressByInterface(String intrf)
     {
-        return RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).trim();
+        return ConsoleTools.RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).trim();
     }
     
-    public String RunCmd(String cmd) 
-    {
-        String ret = "";
-        try
-        {
-            Process proc;
-            proc = Runtime.getRuntime().exec(cmd);
-            BufferedReader out,err;
-            out = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-            proc.waitFor();
-            while(out.ready()){
-                //AppendLog(out.readLine());
-                if(ret.length()>0)
-                    ret += "\n";
-                ret += out.readLine();
-            }
-            if(proc.exitValue() != 0 && proc.exitValue() != 255)
-            {
-                AppendLog("[" + cmd + "]Exit code = " + proc.exitValue() + " " +ret);
-                String errStr = err.readLine();
-                if(errStr != null)
-                    AppendLog(errStr);
-            }
-        }
-        catch(IOException e)
-        {
-            AppendLog(e.getMessage());
-        } catch (InterruptedException ex) {
-            AppendLog(ex.getMessage());
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return ret;
-    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -585,7 +551,7 @@ public class frmMain extends javax.swing.JFrame {
 
     private void CMD_p2p_find()
     {
-        RunCmd("sudo wpa_cli -i " + this.get_P2PInterfaceName() +" p2p_find");
+        ConsoleTools.RunCmd("sudo wpa_cli -i " + this.get_P2PInterfaceName() +" p2p_find");
     }
     
     private void StartP2pConnection(String PeerMac)

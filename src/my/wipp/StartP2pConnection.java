@@ -19,8 +19,8 @@ public class StartP2pConnection extends javax.swing.JFrame {
     public StartP2pConnection(WpaP2pSta p2pSta) {
         initComponents();
         this.m_P2pSta = p2pSta;
+        lblDeviceName.setText(m_P2pSta.getNAME());
         lblMacAddress.setText(m_P2pSta.getMAC_ADDR());
-        
         for (int i = 0; i < 16; i++) {
             cmbGoIntent.addItem(i);
         }
@@ -37,20 +37,24 @@ public class StartP2pConnection extends javax.swing.JFrame {
 
         cmbWpsMethod = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
-        lblMacAddress = new javax.swing.JLabel();
+        lblDeviceName = new javax.swing.JLabel();
         cmbGoIntent = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         btnCancel = new javax.swing.JButton();
         btnConnect = new javax.swing.JButton();
+        txtLog = new javax.swing.JScrollPane();
+        txtP2pLog = new javax.swing.JTextArea();
+        lblMacAddress = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        cmbWpsMethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "WPS", "KEYPAD", "LABEL", "DISPLAY" }));
+        cmbWpsMethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "PBC", "KEYPAD", "LABEL", "DISPLAY" }));
 
         jLabel1.setText("Select Wps Method");
 
-        lblMacAddress.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
-        lblMacAddress.setText("00:00:00:11:22:33");
+        lblDeviceName.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        lblDeviceName.setForeground(new java.awt.Color(0, 51, 153));
+        lblDeviceName.setText("00:00:00:11:22:33");
 
         jLabel2.setText("GO Intent Value");
 
@@ -62,57 +66,69 @@ public class StartP2pConnection extends javax.swing.JFrame {
         });
 
         btnConnect.setText("Connect");
+        btnConnect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConnectActionPerformed(evt);
+            }
+        });
+
+        txtP2pLog.setColumns(20);
+        txtP2pLog.setRows(5);
+        txtLog.setViewportView(txtP2pLog);
+
+        lblMacAddress.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        lblMacAddress.setForeground(new java.awt.Color(204, 0, 0));
+        lblMacAddress.setText("00:00:00:11:22:33");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cmbGoIntent, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(cmbWpsMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                        .addComponent(lblDeviceName)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblMacAddress))
+                    .addComponent(txtLog)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(51, 51, 51)
-                                .addComponent(lblMacAddress))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(35, 35, 35)
-                                .addComponent(btnConnect)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmbWpsMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmbGoIntent, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 1, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(140, 140, 140)
+                .addComponent(btnConnect)
+                .addGap(18, 18, 18)
+                .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblMacAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(9, 9, 9)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDeviceName, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblMacAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(cmbWpsMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbWpsMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
                     .addComponent(cmbGoIntent, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 119, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnCancel)
-                    .addComponent(btnConnect))
-                .addGap(32, 32, 32))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtLog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnConnect)
+                    .addComponent(btnCancel))
+                .addGap(21, 21, 21))
         );
 
         pack();
@@ -122,6 +138,15 @@ public class StartP2pConnection extends javax.swing.JFrame {
         //this.
         this.dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void btnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectActionPerformed
+        String cmd = "sudo "
+                + "wpa_cli -i p2p0 "
+                + "p2p_connect " + cmbWpsMethod.getSelectedItem().toString()  + " "
+                + "go_intent=" + cmbGoIntent.getSelectedItem().toString() + " ";
+        txtP2pLog.append("\n" + cmd);
+        ConsoleTools.RunCmd(cmd);
+    }//GEN-LAST:event_btnConnectActionPerformed
 
     /**
      * @param args the command line arguments
@@ -165,6 +190,9 @@ public class StartP2pConnection extends javax.swing.JFrame {
     private javax.swing.JComboBox cmbWpsMethod;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel lblDeviceName;
     private javax.swing.JLabel lblMacAddress;
+    private javax.swing.JScrollPane txtLog;
+    private javax.swing.JTextArea txtP2pLog;
     // End of variables declaration//GEN-END:variables
 }
