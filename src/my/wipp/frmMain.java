@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
+import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
 
@@ -298,6 +300,7 @@ public class frmMain extends javax.swing.JFrame {
                  RunCmd("./Scripts/restart.sh");
             }
         }).start();
+        txtLog.append("Restarted");
         m_Scaned = false;
     }
     
@@ -414,6 +417,11 @@ public class frmMain extends javax.swing.JFrame {
                 "SSID", "MAC_ADDR", "Frequency", "RSSI"
             }
         ));
+        tblBss.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblBssMouseClicked(evt);
+            }
+        });
         jScrollPane4.setViewportView(tblBss);
 
         jButton1.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
@@ -580,14 +588,67 @@ public class frmMain extends javax.swing.JFrame {
         RunCmd("sudo wpa_cli -i " + this.get_P2PInterfaceName() +" p2p_find");
     }
     
+    private void StartP2pConnection(String PeerMac)
+    {
+        StartP2pConnection frm = new StartP2pConnection(getP2pStaByMac(PeerMac));
+        frm.show();
+    }
+    
+    private WpaP2pSta getP2pStaByMac(String mac)
+    {
+        WpaP2pSta ret = null;
+        
+        for (WpaP2pSta temp : m_P2p) {
+            if(temp.getMAC_ADDR().equals(mac)){
+                ret = temp;
+                break;
+            }
+        }
+        return  ret;
+    }
     private void tblP2PStationsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblP2PStationsMouseClicked
         if(evt.getClickCount() == 2)
         {
             DefaultTableModel dm = (DefaultTableModel) tblP2PStations.getModel();
             int selected = tblP2PStations.getSelectedRow();
             System.out.println("Selected:" + selected);
+            
+            final JTable target = (JTable)evt.getSource();
+            final int row = target.getSelectedRow();
+            final int column = target.getSelectedColumn();
+            //Cast to ur Object type
+            Object obj = target.getValueAt(row, 0);
+            if(obj != null)
+            {
+                String peer_mac = obj.toString();
+                this.StartP2pConnection(peer_mac);
+                AppendLog(peer_mac);
+            }
         }
     }//GEN-LAST:event_tblP2PStationsMouseClicked
+
+    private void tblBssMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblBssMouseClicked
+
+        if(evt.getClickCount() == 2)
+        {
+            DefaultTableModel dm = (DefaultTableModel) tblBss.getModel();
+            int selected = tblBss.getSelectedRow();
+            System.out.println("Selected:" + selected);
+            
+            final JTable target = (JTable)evt.getSource();
+            final int row = target.getSelectedRow();
+            final int column = target.getSelectedColumn();
+            //Cast to ur Object type
+            Object obj = target.getValueAt(row, 0);
+            if(obj != null)
+            {
+                //String peer_mac = obj.toString();
+                //this.StartP2pConnection(peer_mac);
+                //AppendLog(peer_mac);
+            }
+        }
+
+    }//GEN-LAST:event_tblBssMouseClicked
 
     private void AppendLog(String txt)
     {
