@@ -6,17 +6,24 @@
 
 package my.wipp;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author tester
  */
 public class frmBssConnect extends javax.swing.JFrame {
 
+    private WpaBssSta m_BssSta;
     /**
      * Creates new form frmBssConnect
+     * @param p_Bss
      */
-    public frmBssConnect() {
+    public frmBssConnect(WpaBssSta p_Bss) {
         initComponents();
+        this.m_BssSta = p_Bss;
+        UpdatePassword();
     }
 
     /**
@@ -30,41 +37,95 @@ public class frmBssConnect extends javax.swing.JFrame {
 
         jLabel1 = new javax.swing.JLabel();
         txtBssPassword = new javax.swing.JTextField();
+        btnConnect = new javax.swing.JButton();
+        txtLog = new javax.swing.JScrollPane();
+        txtBssLog = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Password");
 
         txtBssPassword.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtBssPassword.setText("*******");
+        txtBssPassword.setText("pas");
+        txtBssPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtBssPasswordKeyTyped(evt);
+            }
+        });
+
+        btnConnect.setText("Connect");
+        btnConnect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConnectActionPerformed(evt);
+            }
+        });
+
+        txtBssLog.setColumns(20);
+        txtBssLog.setRows(5);
+        txtLog.setViewportView(txtBssLog);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtBssPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtLog, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(31, 31, 31)
+                        .addComponent(txtBssPassword))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnConnect)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(txtBssPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(77, 77, 77)
-                        .addComponent(jLabel1)))
-                .addContainerGap(208, Short.MAX_VALUE))
+                .addGap(32, 32, 32)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(txtBssPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(btnConnect)
+                .addGap(18, 18, 18)
+                .addComponent(txtLog, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectActionPerformed
+        this.Connect();
+    }//GEN-LAST:event_btnConnectActionPerformed
+
+    private void txtBssPasswordKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBssPasswordKeyTyped
+        UpdatePassword();
+    }//GEN-LAST:event_txtBssPasswordKeyTyped
+
+    private void UpdatePassword(){
+        String pass = txtBssPassword.getText();
+        this.m_BssSta.setPassword(pass);
+    }
+    private void Connect(){
+        UpdatePassword();
+        String temp = "";
+        String cmd = "./Scripts/ConnectWPA.sh " + 
+                this.m_BssSta.getSSID() + " " +
+                this.m_BssSta.getPassword() + " " +
+                this.m_BssSta.getSecurity()+ " " +
+                this.m_BssSta.getChiper()  ;
+        txtBssLog.append("\n" + cmd);
+
+        if(this.m_BssSta.getSecurity().equals(WfaEncryption.wpa) || this.m_BssSta.getSecurity().equals(WfaEncryption.wpa2)){
+            temp = ConsoleTools.RunCmd(cmd);
+        }
+        
+        txtBssLog.append("\n" + temp);
+    }
     /**
      * @param args the command line arguments
      */
@@ -95,13 +156,16 @@ public class frmBssConnect extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new frmBssConnect().setVisible(true);
+                new frmBssConnect(new WpaBssSta()).setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnConnect;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextArea txtBssLog;
     private javax.swing.JTextField txtBssPassword;
+    private javax.swing.JScrollPane txtLog;
     // End of variables declaration//GEN-END:variables
 }

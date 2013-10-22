@@ -11,17 +11,21 @@ package my.wipp;
  * @author andy
  */
 public class WpaBssSta {
-    protected String SSID;
-    protected String MAC_ADDR;
-    protected int Freq;
-    protected int RSSI;
-
+    private String SSID;
+    private String MAC_ADDR;
+    private int Freq;
+    private int RSSI;
+    private String Security;
+    private String Chiper;
+    private String Password;
     @Override
     public boolean equals(Object obj)
     {
         return (obj instanceof WpaBssSta) && 
                 this.SSID.equals(((WpaBssSta)obj).SSID)  &&
                 this.MAC_ADDR.equals(((WpaBssSta)obj).MAC_ADDR) &&
+                this.getSecurity().equals(((WpaBssSta)obj).getSecurity()) &&
+                this.getChiper().equals(((WpaBssSta)obj).getChiper()) &&
                 this.Freq == (((WpaBssSta)obj).Freq) &&
                 this.RSSI == (((WpaBssSta)obj).RSSI);
     }
@@ -79,6 +83,48 @@ public class WpaBssSta {
      */
     public void setRSSI(int RSSI) {
         this.RSSI = RSSI;
+    }
+
+    /**
+     * @return the Security
+     */
+    public String getSecurity() {
+        return Security;
+    }
+
+    /**
+     * @param Security the Security to set
+     */
+    public void setSecurity(String Security) {
+        this.Security = Security;
+    }
+
+    /**
+     * @return the Chiper
+     */
+    public String getChiper() {
+        return Chiper;
+    }
+
+    /**
+     * @param Chiper the Chiper to set
+     */
+    public void setChiper(String Chiper) {
+        this.Chiper = Chiper;
+    }
+
+    /**
+     * @return the Password
+     */
+    public String getPassword() {
+        return Password;
+    }
+
+    /**
+     * @param Password the Password to set
+     */
+    public void setPassword(String Password) {
+        this.Password = Password;
     }
     
 }

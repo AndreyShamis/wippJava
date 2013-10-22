@@ -142,10 +142,11 @@ public class StartP2pConnection extends javax.swing.JFrame {
     private void btnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectActionPerformed
         String cmd = "sudo "
                 + "wpa_cli -i p2p0 "
-                + "p2p_connect " + cmbWpsMethod.getSelectedItem().toString()  + " "
+                + "p2p_connect " + this.m_P2pSta.getMAC_ADDR() + " "
+                + cmbWpsMethod.getSelectedItem().toString().toLowerCase()  + " "
                 + "go_intent=" + cmbGoIntent.getSelectedItem().toString() + " ";
         txtP2pLog.append("\n" + cmd);
-        ConsoleTools.RunCmd(cmd);
+        txtP2pLog.append("\n" + ConsoleTools.RunCmd(cmd));
     }//GEN-LAST:event_btnConnectActionPerformed
 
     /**

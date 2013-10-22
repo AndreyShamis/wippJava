@@ -60,6 +60,22 @@ public class frmMain extends javax.swing.JFrame {
                     newSta.setMAC_ADDR(params[0]);
                     newSta.setFreq(Integer.parseInt(params[1]));
                     newSta.setRSSI(Integer.parseInt(params[2]));
+                    if(params[3].contains(WfaEncryption.wpa2))
+                        newSta.setSecurity(WfaEncryption.wpa2);
+                    else if(params[3].contains(WfaEncryption.wpa))
+                        newSta.setSecurity(WfaEncryption.wpa);
+                    else if(params[3].contains(WfaEncryption.wep))
+                        newSta.setSecurity(WfaEncryption.wep);
+                    else 
+                        newSta.setSecurity(WfaEncryption.open);
+                    
+                    if(params[3].contains(WfaChiper.CCMP) && params[3].contains(WfaChiper.TKIP))
+                        newSta.setChiper(WfaChiper.CCMP_TKIP);
+                    else if(params[3].contains(WfaChiper.CCMP))
+                        newSta.setChiper(WfaChiper.CCMP);
+                    else if(params[3].contains(WfaChiper.TKIP))
+                        newSta.setChiper(WfaChiper.TKIP);
+                     
                     p_BssSta.add(newSta);
                 }
                 catch(Exception ex){}
@@ -211,8 +227,10 @@ public class frmMain extends javax.swing.JFrame {
                 Vector vc = new Vector();
                 vc.add(temp.getSSID());
                 vc.add(temp.getMAC_ADDR());
-                vc.add(temp.Freq);
-                vc.add(temp.RSSI);
+                vc.add(temp.getFreq());
+                vc.add(temp.getRSSI());
+                vc.add(temp.getSecurity());
+                vc.add(temp.getChiper());
                 dm.insertRow(i, vc); 
                 i++;
             }
@@ -375,14 +393,23 @@ public class frmMain extends javax.swing.JFrame {
         ));
         jScrollPane2.setViewportView(tblNetworkInterfaces);
 
+        tblBss.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         tblBss.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "SSID", "MAC_ADDR", "Frequency", "RSSI"
+                "SSID", "MAC_ADDR", "Frequency", "RSSI", "Security", "Chiper"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         tblBss.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblBssMouseClicked(evt);
@@ -504,7 +531,7 @@ public class frmMain extends javax.swing.JFrame {
                         .addContainerGap()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 554, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -572,6 +599,20 @@ public class frmMain extends javax.swing.JFrame {
         }
         return  ret;
     }
+    
+    private WpaBssSta getBssStaByMac(String mac)
+    {
+        WpaBssSta ret = null;
+        
+        for (WpaBssSta temp : m_Bss) {
+            if(temp.getMAC_ADDR().equals(mac)){
+                ret = temp;
+                break;
+            }
+        }
+        return  ret;
+    }
+    
     private void tblP2PStationsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblP2PStationsMouseClicked
         if(evt.getClickCount() == 2)
         {
@@ -605,17 +646,21 @@ public class frmMain extends javax.swing.JFrame {
             final int row = target.getSelectedRow();
             final int column = target.getSelectedColumn();
             //Cast to ur Object type
-            Object obj = target.getValueAt(row, 0);
-            if(obj != null)
-            {
-                //String peer_mac = obj.toString();
-                //this.StartP2pConnection(peer_mac);
-                //AppendLog(peer_mac);
+            Object obj = target.getValueAt(row, 1);
+            if(obj != null){
+                String peer_mac = obj.toString();
+                this.StartBssConnection(peer_mac);
+                AppendLog(peer_mac);
             }
         }
 
     }//GEN-LAST:event_tblBssMouseClicked
-
+    
+    private void StartBssConnection(String PeerMac){
+        frmBssConnect frm = new frmBssConnect(getBssStaByMac(PeerMac));
+        frm.show();
+    }
+    
     private void AppendLog(String txt)
     {
         txtLog.append("\n"+ txt);
