@@ -460,6 +460,7 @@ public class frmMain extends javax.swing.JFrame {
         tblP2PStations = new javax.swing.JTable();
         jLabel7 = new javax.swing.JLabel();
         txtP2PFilter = new javax.swing.JTextField();
+        jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         txtBssFilter = new javax.swing.JTextField();
@@ -479,7 +480,22 @@ public class frmMain extends javax.swing.JFrame {
             new String [] {
                 "Name", "MAC_ADDR", "IP"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane2.setViewportView(tblNetworkInterfaces);
 
         jButton1.setFont(new java.awt.Font("Dialog", 0, 10)); // NOI18N
@@ -696,6 +712,19 @@ public class frmMain extends javax.swing.JFrame {
         );
 
         jTabbedPane1.addTab("P2P", jPanel2);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 634, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 209, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Log", jPanel4);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -967,6 +996,7 @@ public class frmMain extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
