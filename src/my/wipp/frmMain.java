@@ -72,8 +72,10 @@ public class frmMain extends javax.swing.JFrame {
             }
         }
     };
+    
     private final Timer timer  = new Timer(700,al);
     private final Timer timerSlow  = new Timer(1000,timerActionSlow);
+    
     
     private ArrayList<WpaBssSta> getBssStations(){
         return  getBssStations(this.get_BSSInterfaceName());

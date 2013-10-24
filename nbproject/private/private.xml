@@ -6,7 +6,8 @@
             <file>file:/home/tester/devel/wippJava/src/my/wipp/frmBssConnect.java</file>
             <file>file:/home/tester/devel/wippJava/src/my/wipp/frmMain.java</file>
             <file>file:/home/tester/devel/wippJava/src/my/wipp/ConsoleTools.java</file>
-            <file>file:/home/tester/devel/wippJava/src/my/wipp/StartP2pConnection.java</file>
+            <file>file:/home/tester/devel/wippJava/src/my/wipp/BssConnect.java</file>
+            <file>file:/home/tester/devel/wippJava/src/my/wipp/WpaBssSta.java</file>
         </group>
     </open-files>
 </project-private>
