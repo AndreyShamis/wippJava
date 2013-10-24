@@ -15,6 +15,3 @@ sudo wpa_cli -i wlan0 set_network 0 group ${SECURITY}
 sudo wpa_cli -i wlan0 set_network 0 pairwise ${SECURITY}
 sudo wpa_cli -i wlan0 set_network 0 psk \"${PASSWORD}\"
 sudo wpa_cli -i wlan0 enable_network 0
-sleep 4
-sudo dhclient -r wlan0
-sudo dhclient wlan0

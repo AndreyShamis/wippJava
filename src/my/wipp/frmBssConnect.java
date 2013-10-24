@@ -46,7 +46,7 @@ public class frmBssConnect extends javax.swing.JFrame {
         jLabel1.setText("Password");
 
         txtBssPassword.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtBssPassword.setText("pas");
+        txtBssPassword.setText("1234567890");
         txtBssPassword.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txtBssPasswordKeyTyped(evt);
@@ -113,18 +113,28 @@ public class frmBssConnect extends javax.swing.JFrame {
     private void Connect(){
         UpdatePassword();
         String temp = "";
-        String cmd = "./Scripts/ConnectWPA.sh " + 
-                this.m_BssSta.getSSID() + " " +
-                this.m_BssSta.getPassword() + " " +
-                this.m_BssSta.getSecurity()+ " " +
-                this.m_BssSta.getChiper()  ;
-        txtBssLog.append("\n" + cmd);
-
-        if(this.m_BssSta.getSecurity().equals(WfaEncryption.wpa) || this.m_BssSta.getSecurity().equals(WfaEncryption.wpa2)){
-            temp = ConsoleTools.RunCmd(cmd);
-        }
+        String connScript = "";
         
-        txtBssLog.append("\n" + temp);
+        if(this.m_BssSta.getSecurity().equals(WfaEncryption.wpa) || this.m_BssSta.getSecurity().equals(WfaEncryption.wpa2)){
+            connScript = "ConnectWPA.sh ";
+        }else if(this.m_BssSta.getSecurity().equals(WfaEncryption.wep)){
+            connScript = "ConnectWEP.sh ";
+        } else {
+            connScript = "ConnectOPEN.sh ";
+        }
+        String cmd = "./Scripts/" + connScript +
+            this.m_BssSta.getSSID() + " " +
+            this.m_BssSta.getPassword() + " " +
+            this.m_BssSta.getSecurity() + " " +
+            this.m_BssSta.getChiper();
+        
+        txtBssLog.append("\n" + cmd);
+        
+        BssConnect conn = new BssConnect();
+        conn.setCmd_Connect(cmd);
+        new Thread(conn).start();
+        
+        txtBssLog.append("\n Start connection ...");
     }
     /**
      * @param args the command line arguments
