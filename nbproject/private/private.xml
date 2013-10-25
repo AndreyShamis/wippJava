@@ -3,11 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/tester/devel/wippJava/src/my/wipp/frmBssConnect.java</file>
+            <file>file:/home/tester/devel/wippJava/src/my/wipp/SyslogWatcher.java</file>
             <file>file:/home/tester/devel/wippJava/src/my/wipp/frmMain.java</file>
             <file>file:/home/tester/devel/wippJava/src/my/wipp/ConsoleTools.java</file>
-            <file>file:/home/tester/devel/wippJava/src/my/wipp/BssConnect.java</file>
-            <file>file:/home/tester/devel/wippJava/src/my/wipp/WpaBssSta.java</file>
+            <file>file:/home/tester/devel/wippJava/src/my/wipp/DmesgWatcher.java</file>
         </group>
     </open-files>
 </project-private>
