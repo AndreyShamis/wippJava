@@ -11,8 +11,9 @@ package my.wipp;
  * @author andy
  */
 public class BashResult {
-    protected String out;
-    protected String err;
+    protected String out = "";
+    protected String err = "";
+    protected Integer exitCode = 0;
 
     /**
      * @return the out

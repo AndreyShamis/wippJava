@@ -21,7 +21,10 @@ public class BssConnect implements Runnable{
     public void run() {
         try {
             System.out.println("Start runnable");
-            log.append(ConsoleTools.RunCmd(cmd_Connect));
+            BashResult tmp = ConsoleTools.RunCmd(cmd_Connect);
+            log.append("\n" + tmp.out);
+                if(tmp.err.length()>0)
+                  log.append("\n" + tmp.err);          
             System.out.println("Sleep before request IP");
             Thread.sleep(4000);
             System.out.println("Start request IP");
@@ -34,7 +37,11 @@ public class BssConnect implements Runnable{
 
     private void DhcpRequest()
     {
-        log.append(ConsoleTools.RunCmd("./Scripts/dhcp-client.sh"));
+        BashResult tmp = ConsoleTools.RunCmd("./Scripts/dhcp-client.sh");
+        
+        log.append(tmp.out);
+        if(tmp.err.length()>0)
+            log.append(tmp.err);
     }
     
     /**

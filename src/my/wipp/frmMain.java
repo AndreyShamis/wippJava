@@ -102,7 +102,7 @@ public class frmMain extends javax.swing.JFrame {
     private ArrayList<WpaBssSta> getBssStations(String intrf ){
         String temp = "";
         ArrayList<WpaBssSta> p_BssSta    = new ArrayList<WpaBssSta>();
-        temp = ConsoleTools.RunCmd("./Scripts/getBssStations.sh " + intrf);
+        temp = ConsoleTools.RunCmd("./Scripts/getBssStations.sh " + intrf).out;
         String[] sta = temp.split("\n");
         for (String tmp : sta) {
             String [] params = tmp.split("\t");
@@ -142,14 +142,14 @@ public class frmMain extends javax.swing.JFrame {
     }
     
     private void BSS_Scan(String intrf){
-        String temp = ConsoleTools.RunCmd("./Scripts/bssScan.sh " + intrf);
+        String temp = ConsoleTools.RunCmd("./Scripts/bssScan.sh " + intrf).out;
         m_Scaned = true;
         AppendLog("Scan request:" + temp);
     }
     
     private void UpdateBssStatus(){
         String cmd = "./Scripts/getBssStatus.sh " + this.m_BSSInterfaceName;
-        String temp = ConsoleTools.RunCmd(cmd);
+        String temp = ConsoleTools.RunCmd(cmd).out;
         
         String [] params = temp.split("\n");
         //this.m_Self
@@ -171,7 +171,7 @@ public class frmMain extends javax.swing.JFrame {
     
     private void UpdateBssSignalPoll(){
         String cmd = "./Scripts/getBssSignalPoll.sh " + this.m_BSSInterfaceName;
-        String temp = ConsoleTools.RunCmd(cmd);
+        String temp = ConsoleTools.RunCmd(cmd).out;
         
         String [] params = temp.split("\n");
         
@@ -200,7 +200,7 @@ public class frmMain extends javax.swing.JFrame {
         String temp = "";
         ArrayList<networkInterface> p_Interfeces    = new ArrayList<networkInterface>();
 
-        temp = ConsoleTools.RunCmd("./Scripts/getInterfacesAndMac.sh");
+        temp = ConsoleTools.RunCmd("./Scripts/getInterfacesAndMac.sh").out;
         String[] interfaces = temp.split("\n");
 
         for (String tmp : interfaces) {
@@ -378,14 +378,14 @@ public class frmMain extends javax.swing.JFrame {
     {
         String temp = "";
         ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<WpaP2pSta>();
-        temp = ConsoleTools.RunCmd("./Scripts/getP2pPeers.sh");
+        temp = ConsoleTools.RunCmd("./Scripts/getP2pPeers.sh").out;
         String[] peers = temp.split("\n");
         for (String tmp : peers) {
             if(tmp.length() >5)
             {    
                 WpaP2pSta peer = new WpaP2pSta();
                 peer.setMAC_ADDR(tmp);
-                String p2p_info = ConsoleTools.RunCmd("./Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR);
+                String p2p_info = ConsoleTools.RunCmd("./Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR).out;
                 String[] p2p_info_arr = p2p_info.split("\n");
                 for (String tmpParams : p2p_info_arr) {
                     String [] params = tmpParams.split("=");
@@ -443,7 +443,7 @@ public class frmMain extends javax.swing.JFrame {
     
     private String getIpAddressByInterface(String intrf)
     {
-        return ConsoleTools.RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).trim();
+        return ConsoleTools.RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).out.trim();
     }
     
 
@@ -977,8 +977,10 @@ public class frmMain extends javax.swing.JFrame {
     {
         String cmd = "sudo wpa_cli -i " + this.get_P2PInterfaceName() +" p2p_find 180";
         AppendLog(cmd);
-        cmd = ConsoleTools.RunCmd(cmd);
-        AppendLog(cmd);
+        BashResult tmp  = ConsoleTools.RunCmd(cmd);
+        AppendLog(tmp.out);
+        if(tmp.err.length()>0)
+            AppendLog(tmp.err);
     }
     
     private void StartP2pConnection(String PeerMac)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 PASSWORD=$2
 SSID=$1

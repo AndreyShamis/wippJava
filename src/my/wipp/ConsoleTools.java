@@ -17,9 +17,9 @@ import java.util.logging.Logger;
  * @author tester
  */
 public class ConsoleTools {
-    public static String RunCmd(String cmd) 
+    public static BashResult RunCmd(String cmd) 
     {
-        String ret = "";
+        BashResult ret_res = new BashResult();
         try
         {
             Process proc;
@@ -30,30 +30,24 @@ public class ConsoleTools {
             proc.waitFor();
             while(out.ready()){
                 //AppendLog(out.readLine());
-                if(ret.length()>0)
-                    ret += "\n";
-                ret += out.readLine();
+                if(ret_res.out.length()>0)
+                    ret_res.out += "\n";
+                ret_res.out += out.readLine();
             }
-            if(proc.exitValue() != 0 && proc.exitValue() != 255)
-            {
-                //AppendLog("[" + cmd + "]Exit code = " + proc.exitValue() + " " +ret);
-                ret += "Error:[" + cmd + "]Exit code = " + proc.exitValue() + " " +ret;
-                String errStr = err.readLine();
-                
-                if(errStr != null)
-                    ret += "Error: errStr";
-//                    AppendLog(errStr);
-            }
+            ret_res.exitCode = proc.exitValue();
+            while(err.ready())
+                    ret_res.err += "\n" + err.readLine();
+
         }
         catch(IOException e)
         {
-            ret += "ERROR Exc:" + e.getMessage();
+            ret_res.err += "\n" + "ERROR Exc:" + e.getMessage();
         } catch (InterruptedException ex) {
-            ret += "ERROR Exc:" + ex.getMessage();
+            ret_res.err += "\n" + "ERROR Exc:" + ex.getMessage();
             //AppendLog(ex.getMessage());
             Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        return ret;
+        return ret_res;
     }    
 }
