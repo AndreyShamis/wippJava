@@ -6,8 +6,11 @@
 
 package my.wipp;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Timer;
 
 /**
  *
@@ -16,6 +19,19 @@ import java.util.logging.Logger;
 public class frmBssConnect extends javax.swing.JFrame {
 
     private WpaBssSta m_BssSta;
+    private BssConnect conn;
+    private Timer tmrLog = new Timer(100, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            if(conn != null){
+                String temp = conn.getLog().toString();
+                if(temp.length()>0){
+                    conn.setLog(new StringBuilder());
+                    txtBssLog.append("\n" + temp);
+                }
+            }
+        }
+    });
     /**
      * Creates new form frmBssConnect
      * @param p_Bss
@@ -24,6 +40,10 @@ public class frmBssConnect extends javax.swing.JFrame {
         initComponents();
         this.m_BssSta = p_Bss;
         UpdatePassword();
+        tmrLog.start();
+        lblBssSSID.setText(m_BssSta.getSSID());
+        lblBssSecurity.setText(m_BssSta.getSecurity());
+        lblBssChiper.setText(m_BssSta.getChiper());
     }
 
     /**
@@ -40,9 +60,16 @@ public class frmBssConnect extends javax.swing.JFrame {
         btnConnect = new javax.swing.JButton();
         txtLog = new javax.swing.JScrollPane();
         txtBssLog = new javax.swing.JTextArea();
+        jLabel2 = new javax.swing.JLabel();
+        lblBssSSID = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        lblBssSecurity = new javax.swing.JLabel();
+        lblBssChiper = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+        jLabel1.setFont(new java.awt.Font("Serif", 1, 12)); // NOI18N
         jLabel1.setText("Password");
 
         txtBssPassword.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -64,6 +91,22 @@ public class frmBssConnect extends javax.swing.JFrame {
         txtBssLog.setRows(5);
         txtLog.setViewportView(txtBssLog);
 
+        jLabel2.setFont(new java.awt.Font("Serif", 1, 12)); // NOI18N
+        jLabel2.setText("SSID:");
+
+        lblBssSSID.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        lblBssSSID.setText("SSID");
+
+        jLabel3.setFont(new java.awt.Font("Serif", 1, 12)); // NOI18N
+        jLabel3.setText("Security:");
+
+        jLabel4.setFont(new java.awt.Font("Serif", 1, 12)); // NOI18N
+        jLabel4.setText("Chiper:");
+
+        lblBssSecurity.setText("Security");
+
+        lblBssChiper.setText("Security");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -71,27 +114,51 @@ public class frmBssConnect extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtLog, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                    .addComponent(txtLog, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(31, 31, 31)
-                        .addComponent(txtBssPassword))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnConnect)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnConnect)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtBssPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel3))
+                                .addGap(24, 24, 24)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(lblBssSecurity)
+                                        .addGap(81, 81, 81)
+                                        .addComponent(jLabel4)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(lblBssChiper))
+                                    .addComponent(lblBssSSID, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(32, 32, 32)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(lblBssSSID))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(lblBssSecurity)
+                    .addComponent(lblBssChiper))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(txtBssPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnConnect)
                 .addGap(18, 18, 18)
-                .addComponent(txtLog, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                .addComponent(txtLog, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -130,7 +197,7 @@ public class frmBssConnect extends javax.swing.JFrame {
         
         txtBssLog.append("\n" + cmd);
         
-        BssConnect conn = new BssConnect();
+        conn = new BssConnect();
         conn.setCmd_Connect(cmd);
         new Thread(conn).start();
         
@@ -174,6 +241,12 @@ public class frmBssConnect extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConnect;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel lblBssChiper;
+    private javax.swing.JLabel lblBssSSID;
+    private javax.swing.JLabel lblBssSecurity;
     private javax.swing.JTextArea txtBssLog;
     private javax.swing.JTextField txtBssPassword;
     private javax.swing.JScrollPane txtLog;

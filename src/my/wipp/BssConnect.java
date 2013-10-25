@@ -16,12 +16,12 @@ import java.util.logging.Logger;
 public class BssConnect implements Runnable{
 
     private String cmd_Connect = "";
-    
+    private StringBuilder log = new StringBuilder();
     @Override
     public void run() {
         try {
             System.out.println("Start runnable");
-            ConsoleTools.RunCmd(cmd_Connect);
+            log.append(ConsoleTools.RunCmd(cmd_Connect));
             System.out.println("Sleep before request IP");
             Thread.sleep(4000);
             System.out.println("Start request IP");
@@ -34,7 +34,7 @@ public class BssConnect implements Runnable{
 
     private void DhcpRequest()
     {
-        ConsoleTools.RunCmd("./Scripts/dhcp-client.sh");
+        log.append(ConsoleTools.RunCmd("./Scripts/dhcp-client.sh"));
     }
     
     /**
@@ -49,6 +49,20 @@ public class BssConnect implements Runnable{
      */
     public void setCmd_Connect(String cmd_Connect) {
         this.cmd_Connect = cmd_Connect;
+    }
+
+    /**
+     * @return the log
+     */
+    public StringBuilder getLog() {
+        return log;
+    }
+
+    /**
+     * @param log the log to set
+     */
+    public void setLog(StringBuilder log) {
+        this.log = log;
     }
     
 }
