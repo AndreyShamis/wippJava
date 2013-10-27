@@ -45,7 +45,7 @@ public class SyslogWatcher implements Runnable{
                             !readl.contains("P2P_PEER FIRST") &&
                             !readl.contains("SIGNAL_POLL"))
                     {
-                        System.out.println(readl);
+                        //System.out.println(readl);
                         log.append("\n" + readl);
                         try {
                             Thread.sleep(1);
