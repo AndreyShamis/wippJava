@@ -146,7 +146,10 @@ public class StartP2pConnection extends javax.swing.JFrame {
                 + cmbWpsMethod.getSelectedItem().toString().toLowerCase()  + " "
                 + "go_intent=" + cmbGoIntent.getSelectedItem().toString() + " ";
         txtP2pLog.append("\n" + cmd);
-        txtP2pLog.append("\n" + ConsoleTools.RunCmd(cmd));
+        BashResult tmp = ConsoleTools.RunCmd(cmd);
+        txtP2pLog.append("\n" + tmp.out);
+        if(tmp.exitCode >0)
+            txtP2pLog.append("\nError:" + tmp.err);
     }//GEN-LAST:event_btnConnectActionPerformed
 
     /**
