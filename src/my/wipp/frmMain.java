@@ -29,11 +29,11 @@ public class frmMain extends javax.swing.JFrame {
     private ArrayList<WpaBssSta>        m_Bss           = new ArrayList<WpaBssSta>();
     private ArrayList<WpaP2pSta>        m_P2p           = new ArrayList<WpaP2pSta>();
     private ArrayList<networkInterface> m_Interfeces    = new ArrayList<networkInterface>();
-    private String m_BSSInterfaceName   =   "wlan0";
-    private String m_P2PInterfaceName   =   "p2p0";
-    private boolean  m_Scaned = false;
+    private String m_BSSInterfaceName                   =   "wlan0";
+    private String m_P2PInterfaceName                   =   "p2p0";
+    private boolean  m_Scaned                           = false;
     private SyslogWatcher wtch;
-    private DmesgWatcher dwch;
+    //private DmesgWatcher dwch;
     private WpaBssSta m_Self = new WpaBssSta();
     //-------------------------------------------------------------------------
     //-------------------------------------------------------------------------
@@ -69,7 +69,7 @@ public class frmMain extends javax.swing.JFrame {
             try{
                 if(!txtSupplicantLog.getText().equals(wtch.log.toString()))
                     txtSupplicantLog.setText(wtch.log.toString());
-                txtDmesgLog.setText(dwch.log.toString());
+ //               txtDmesgLog.setText(dwch.log.toString());
             }catch(Exception ex){
                 AppendLog("Timer error:" + ex.getMessage());
             }
@@ -89,11 +89,26 @@ public class frmMain extends javax.swing.JFrame {
             }
         }
     };
-    
+     ActionListener timerActionVerySlow = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            try{
+                getIntelDriverVersion();
+            }catch(Exception ex){
+                AppendLog("Timer error:" + ex.getMessage());
+            }
+        }
+    };
+    private String getIntelDriverVersion(){
+        BashResult temp = ConsoleTools.RunCmd("./Scripts/getIntelDriverVer.sh");
+        AppendLog("Intel Driver Version:" + temp.out);
+        return temp.out;
+    }
+            
     private final Timer timer  = new Timer(700,al);
     private final Timer timerSlow  = new Timer(1000,timerActionSlow);
     private final Timer timerVeryFast  = new Timer(100,timerActionVeryFast);
-    
+    private final Timer timerVerySlow  = new Timer(5000,timerActionVerySlow);
     
     private ArrayList<WpaBssSta> getBssStations(){
         return  getBssStations(this.get_BSSInterfaceName());
@@ -148,11 +163,10 @@ public class frmMain extends javax.swing.JFrame {
     }
     
     private void UpdateBssStatus(){
-        String cmd = "./Scripts/getBssStatus.sh " + this.m_BSSInterfaceName;
-        String temp = ConsoleTools.RunCmd(cmd).out;
-        
-        String [] params = temp.split("\n");
-        //this.m_Self
+        String      cmd     = "./Scripts/getBssStatus.sh " + this.m_BSSInterfaceName;
+        String      temp    = ConsoleTools.RunCmd(cmd).out;
+        String []   params  = temp.split("\n");
+
         for (String tmp : params) {
             String [] pVal = tmp.split("=");
             if(pVal.length == 2){
@@ -164,16 +178,14 @@ public class frmMain extends javax.swing.JFrame {
                 }else if (key.equalsIgnoreCase("wpa_state")){
                     this.m_Self.setWpaState(val);
                 }
-                
             }
         }
     }
     
     private void UpdateBssSignalPoll(){
-        String cmd = "./Scripts/getBssSignalPoll.sh " + this.m_BSSInterfaceName;
-        String temp = ConsoleTools.RunCmd(cmd).out;
-        
-        String [] params = temp.split("\n");
+        String      cmd     = "./Scripts/getBssSignalPoll.sh " + this.m_BSSInterfaceName;
+        String      temp    = ConsoleTools.RunCmd(cmd).out;
+        String []   params  = temp.split("\n");
         
         for (String tmp : params) {
             String [] pVal = tmp.split("=");
@@ -192,14 +204,13 @@ public class frmMain extends javax.swing.JFrame {
                 }else if (key.equalsIgnoreCase("WIDTH")){
                     this.m_Self.setWidth(val);
                 }
-                
             }
         }
-    }    
+    }
+
     private ArrayList<networkInterface> getNetworkInterfaces(){
         String temp = "";
         ArrayList<networkInterface> p_Interfeces    = new ArrayList<networkInterface>();
-
         temp = ConsoleTools.RunCmd("./Scripts/getInterfacesAndMac.sh").out;
         String[] interfaces = temp.split("\n");
 
@@ -216,7 +227,6 @@ public class frmMain extends javax.swing.JFrame {
         return  p_Interfeces;
     }
     
-    
     private boolean isP2pListChanged(ArrayList<WpaP2pSta> p_1,ArrayList<WpaP2pSta> p_2){
         if(p_1.size() != p_2.size())
             return true;
@@ -225,7 +235,6 @@ public class frmMain extends javax.swing.JFrame {
             if(!p_2.contains(wpaP2pSta))
                 return true;
         }
-        
         return false;
     }
      
@@ -237,7 +246,6 @@ public class frmMain extends javax.swing.JFrame {
             if(!p_2.contains(temp))
                 return true;
         }
-        
         return false;
     }
     
@@ -249,19 +257,16 @@ public class frmMain extends javax.swing.JFrame {
             if(!p_2.contains(temp))
                 return true;
         }
-        
         return false;
     }
       
     private void GUIUpdateNetworkInterfaces(){
-        
         ArrayList<networkInterface> p_Interfeces    = new ArrayList<networkInterface>();
-        p_Interfeces = getNetworkInterfaces();
-        DefaultTableModel dm = (DefaultTableModel) tblNetworkInterfaces.getModel();
-        int rowCount=dm.getRowCount();
+        p_Interfeces            = getNetworkInterfaces();
+        DefaultTableModel dm    = (DefaultTableModel) tblNetworkInterfaces.getModel();
+        int rowCount            = dm.getRowCount();
         
-        if(isInterfacesChanged(p_Interfeces,m_Interfeces) || rowCount < 1)
-        {
+        if(isInterfacesChanged(p_Interfeces,m_Interfeces) || rowCount < 1){
             m_Interfeces = p_Interfeces;
             for (int i = rowCount-1;i>=0;i--) {
                 dm.removeRow(i);
@@ -280,9 +285,9 @@ public class frmMain extends javax.swing.JFrame {
     
     private void GUIUpdateP2pPeers(){
         ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<WpaP2pSta>();
-        p_P2pPeers = getP2pPeers();
-        DefaultTableModel dm = (DefaultTableModel) tblP2PStations.getModel();
-        int rowCount=dm.getRowCount();
+        p_P2pPeers              = getP2pPeers();
+        DefaultTableModel dm    = (DefaultTableModel) tblP2PStations.getModel();
+        int rowCount            = dm.getRowCount();
         
         try{
             if(isP2pListChanged(p_P2pPeers,m_P2p) || rowCount < 1 || p_P2pPeers.size() ==0 ){
@@ -302,9 +307,8 @@ public class frmMain extends javax.swing.JFrame {
         }catch(Exception ex){
             AppendLog("GUIUpdateP2pPeers error " + ex.getMessage());
         }
-
     }
-    
+
     private void GUIBssPrintTable(){
         try{
             DefaultTableModel dm = (DefaultTableModel) tblBss.getModel();
@@ -342,71 +346,63 @@ public class frmMain extends javax.swing.JFrame {
         }catch(Exception ex){
             AppendLog("[GUIBssPrintTable] error: " + ex.getMessage() );
         }
-
     }
-    private void GUIUpdateBss()
-    {
+    
+    private void GUIUpdateBss(){
         try{
             ArrayList<WpaBssSta> p_Bss    = new ArrayList<WpaBssSta>();
             p_Bss = getBssStations();
             DefaultTableModel dm = (DefaultTableModel) tblBss.getModel();
             int rowCount=dm.getRowCount();
-
-            if(isBSSListChanged(p_Bss,m_Bss) || rowCount < 1)
-            {
+            if(isBSSListChanged(p_Bss,m_Bss) || rowCount < 1){
                 m_Bss = p_Bss;
                 GUIBssPrintTable();
             }    
-        }catch(Exception ex){
-            
-        }
-
-        
+        }catch(Exception ex){}
     }
-    
 
-    
-    private void CleanP2pPeersTable()
-    {
+    private void CleanP2pPeersTable(){
         DefaultTableModel dm = (DefaultTableModel) tblP2PStations.getModel();
         int rowCount=dm.getRowCount();
         for (int i = rowCount-1;i>=0;i--) {
             dm.removeRow(i);
         }
     }
-    private ArrayList<WpaP2pSta> getP2pPeers()
-    {
+    
+    private WpaP2pSta getP2pPeerInfo(String macAddress){
+        WpaP2pSta peer = new WpaP2pSta();
+        peer.setMAC_ADDR(macAddress);
+        String p2p_info = ConsoleTools.RunCmd("./Scripts/getP2pPeerInfo.sh " + macAddress).out;
+        String[] p2p_info_arr = p2p_info.split("\n");
+        for (String tmpParams : p2p_info_arr) {
+            String [] params = tmpParams.split("=");
+            if(params.length == 2){
+                if(params[0].equalsIgnoreCase("listen_freq")){
+                        int lf = -1;
+                        if(params[1].length() >0)
+                            lf = Integer.parseInt(params[1]);
+                        peer.setListen_freq(lf);
+                }else if(params[0].equalsIgnoreCase("manufacturer")){
+                        String man = "Unknown";
+                        if(params[1] != null && params[1].length() > 1)
+                            man = params[1];
+                        peer.setManufactor(man);
+                }else if(params[0].equalsIgnoreCase( "device_name")){
+                        peer.setNAME(params[1]);   
+                }
+            }
+        }
+        return peer;
+    }
+    
+    private ArrayList<WpaP2pSta> getP2pPeers(){
         String temp = "";
         ArrayList<WpaP2pSta> p_P2pPeers    = new ArrayList<WpaP2pSta>();
         temp = ConsoleTools.RunCmd("./Scripts/getP2pPeers.sh").out;
         String[] peers = temp.split("\n");
         for (String tmp : peers) {
-            if(tmp.length() >5)
-            {    
-                WpaP2pSta peer = new WpaP2pSta();
-                peer.setMAC_ADDR(tmp);
-                String p2p_info = ConsoleTools.RunCmd("./Scripts/getP2pPeerInfo.sh " + peer.MAC_ADDR).out;
-                String[] p2p_info_arr = p2p_info.split("\n");
-                for (String tmpParams : p2p_info_arr) {
-                    String [] params = tmpParams.split("=");
-                    if(params.length == 2)
-                    {
-                        if(params[0].equalsIgnoreCase("listen_freq")){
-                                int lf = -1;
-                                if(params[1].length() >0)
-                                    lf = Integer.parseInt(params[1]);
-                                peer.setListen_freq(lf);
-                        }else if(params[0].equalsIgnoreCase("manufacturer")){
-                                String man = "Unknown";
-                                if(params[1] != null && params[1].length() > 1)
-                                    man = params[1];
-                                peer.setManufactor(man);
-                        }else if(params[0].equalsIgnoreCase( "device_name")){
-                                peer.setNAME(params[1]);   
-                        }
-                    }
-
-                }
+            if(tmp.length() >5){    
+                WpaP2pSta peer = getP2pPeerInfo(tmp);
                 p_P2pPeers.add(peer);
             }
         }
@@ -421,17 +417,16 @@ public class frmMain extends javax.swing.JFrame {
         timer.start();
         timerSlow.start();
         timerVeryFast.start();
+        timerVerySlow.start();
         wtch = new SyslogWatcher();
-        dwch = new DmesgWatcher();
+        //dwch = new DmesgWatcher();
         new Thread(wtch).start();
-        new Thread(dwch).start();
+        //new Thread(dwch).start();
     }
 
-    private void DriverReload()
-    {
+    private void DriverReload(){
         new Thread(new Runnable() {
-            public void run()
-            {
+            public void run(){
                  ConsoleTools.RunCmd("./Scripts/restart.sh");
             }
         }).start();
@@ -441,8 +436,7 @@ public class frmMain extends javax.swing.JFrame {
         m_Scaned = false;
     }
     
-    private String getIpAddressByInterface(String intrf)
-    {
+    private String getIpAddressByInterface(String intrf){
         return ConsoleTools.RunCmd("./Scripts/getIpAddressByInterface.sh " + intrf).out.trim();
     }
     
